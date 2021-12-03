@@ -1,6 +1,6 @@
 import './App.css';
 import React, { Component } from "react";
-import { BroswerRouter as Router, Route, Redirect } from 'react-router-dom';
+import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from './components/Navbar'
 import Signup from './components/Signup'
 import Login from './components/Login'
@@ -12,9 +12,9 @@ import ItemInfo from './components/ItemInfo'
 class App extends Component {
   state = {
     user: {},
-    loggedIn: false,
+    loggedIn: true,
     items: [],
-    currentCart: [],
+    myCart: [],
     cartItems: [],
     itemInfo: "",
     currentItem: {}
@@ -25,7 +25,7 @@ setCurrentUser = (user) => {
   this.setState({
     user: user,
     loggedIn: true,
-    currentCart: [...user.cart.items]
+    myCart: [...user.cart.items]
 
   })
 }
@@ -34,7 +34,7 @@ logOut = () => {
   this.setState({
     user: {},
     loggedIn: false,
-    currentCart: []
+    myCart: []
   })
   localStorage.token = ""
 }
@@ -46,11 +46,12 @@ componentDidMount = () => {
   } else {
     console.log("No token found, try logging in!")
   }
-  fetch("http://localhost:3000/items")
+
+  fetch("/items")
   .then(res => res.json())
   .then(itemData => this.setState({ items: itemData }))
 
-  fetch("http://localhost:3000/cart_items")
+  fetch("/cart_items")
   .then(res => res.json())
   .then(cartItemData => this.setState({ cartItems: cartItemData }))
 
@@ -75,7 +76,7 @@ displayGreeting = () => {
   return(
     <div className="greeting">
       {this.state.loggedIn ? 
-      <h3> Welcome back, {this.state.user.username}!</h3>  
+      <h3> Hello, {this.state.user.username}!</h3>  
       :
       null
 }
@@ -84,7 +85,7 @@ displayGreeting = () => {
     }
   
     addToCart = (item) => {
-      let a = this.state.currentCart.map(test => test.name === item.name)
+      let a = this.state.myCart.map(cartname => cartname.name === item.name)
 
       if (a.includes(true)) {
         let updateCartItem = this.state.cartItems.find(cartItem => cartItem.cart_id === this.state.user.cart.id && cartItem.item_id === item.id)
@@ -103,12 +104,13 @@ displayGreeting = () => {
 
 
       } else {
-        this.setState({ currentCart: [...this.state.currentCart, item]})
+        this.setState({ myCart: [...this.state.myCart, item]})
 
         let newItem = {
           cart_id: this.state.user.cart.id,
           item_id: item.id,
-          quantity: 1
+          quantity: 1,
+          
         }
 
         let reqPackage = {}
@@ -120,11 +122,64 @@ displayGreeting = () => {
         .then(res => res.json())
         .then(newCartItem => this.setState({ cartItems: [...this.state.cartItems, newCartItem]}))
       }
-      <Redirect to={"/cart"} />
+      <Navigate to={"/cart"} />
     }
 
-      removeFromCart = 
+      removeFromCart = (oldItem) => {
+        let newCart = this.state.myCart.filter(item => item !== oldItem)
+        this.setState({ myCart: newCart })
+        let delCartItem = this.state.cartItems.find(cartItem => cartItem.cart_id === this.state.user.cart.id && cartItem.item_id === oldItem.id)
+        let newCartItems = this.state.cartItems.filter(cartItem => cartItem !== delCartItem)
+        this.setState({ cartItems: newCartItems })
 
+        fetch("http://localhost:3000/cart_items" + delCartItem.id, {
+          method: "DELETE"
+        })
+      }
+
+      setCurrentItem = (item) => {
+        this.setState({ currentItem: item })
+      }
+
+      render() {
+        return (
+          <div>
+            <img className="logo" src="https://logos-world.net/wp-content/uploads/2020/04/Air-Jordan-Symbol.png" alt="shoe" width="500" />
+            <div className="shoe-border"/>
+            <Navbar logOut={this.logOut} loggedIn={this.state.loggedIn} />
+              {this.displayGreeting()}
+         
+          
+            <Routes>
+              <Route exact path="/" element={<Home setCurrentItem={this.setCurrentItem} loggedIn={this.state.loggedIn} addToCart={this.addToCart} items={this.state.items} />} />
+              <Route exact path="/about" element={<About />} />
+
+              {/* <Route exact path="/login">
+                {this.state.loggedIn ?
+                <Navigate to="/" />
+                :
+                <Login  setCurrentUser={this.setCurrentUser} tokenLogin={this.tokenLogin} />}
+                </Route>  
+              
+              <Route exact path="/signup">
+                {this.state.loggedIn ?
+              <Navigate to="/" />
+              :
+              <Signup />}
+              </Route>  */}
+
+
+            <Route exact path="/cart" element={ <Cart updateQuantity={this.updateQuantity} setCurrentItem={this.setCurrentItem} loggedIn={this.state.loggedIn} user={this.state.user} cartItems={this.state.cartItems} removeFromCart={this.removeFromCart} myCart={this.state.myCart} />} />
+
+            {/* <Route path="/item/" render={routerProps => <ItemInfo {...routerProps} item={this.state.currentItem} addToCart={this.addToCart} loggedIn={this.state.loggedIn} />} /> */}
+            
+            </Routes>    
+            <div className="footer">
+
+            </div>
+          </div>
+        );
+      }
 }
 
 

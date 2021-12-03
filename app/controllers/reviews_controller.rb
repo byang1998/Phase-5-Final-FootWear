@@ -1,6 +1,6 @@
 class ReviewsController < ApplicationController
 
-    skip_before_action :authorized, only: [:index, :destroy] 
+    # skip_before_action :authorized, only: [:index, :destroy] 
 
 
     def index 
@@ -8,6 +8,7 @@ class ReviewsController < ApplicationController
     end
 
     def show
+
         review = Review.find_by(id: params[:id])
         render json: review.to_json(review_serializer)
     end

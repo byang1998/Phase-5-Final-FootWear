@@ -1,6 +1,6 @@
 class ItemsController < ApplicationController
 
-    skip_before_action :authorized, only: [:index, :destroy] 
+    # skip_before_action :authorized, only: [:index, :destroy] 
 
 
     def index
