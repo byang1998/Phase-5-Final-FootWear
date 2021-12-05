@@ -34,6 +34,8 @@ class CartsController < ApplicationController
             except: [:created_at, :updated_at]
         }
 
+    end
+
     def cart_serializer
         params.require(:cart).permit!
     end

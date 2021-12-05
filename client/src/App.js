@@ -86,10 +86,12 @@ displayGreeting = () => {
   
     addToCart = (item) => {
       let a = this.state.myCart.map(cartname => cartname.name === item.name)
-
+      console.log(a)
       if (a.includes(true)) {
         let updateCartItem = this.state.cartItems.find(cartItem => cartItem.cart_id === this.state.user.cart.id && cartItem.item_id === item.id)
-        let updateQuantity = updateCartItem.quantity += 1
+        console.log(updateCartItem)
+        //let updatequantities = updateCartItem?.quantity
+       let updateQuantity = updateCartItem.quantity += 1
         let sendItem = {
           "quantity": updateQuantity
         }
@@ -107,18 +109,19 @@ displayGreeting = () => {
         this.setState({ myCart: [...this.state.myCart, item]})
 
         let newItem = {
-          cart_id: this.state.user.cart.id,
+          cart_id: this.state.user.cart?.id,
           item_id: item.id,
           quantity: 1,
           
         }
 
+        
         let reqPackage = {}
         reqPackage.headers = { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.token}` }
         reqPackage.method = "POST"
         reqPackage.body = JSON.stringify(newItem)
 
-        fetch("http://localhost:3000/cart_items", reqPackage)
+        fetch("/cart_items", reqPackage)
         .then(res => res.json())
         .then(newCartItem => this.setState({ cartItems: [...this.state.cartItems, newCartItem]}))
       }
@@ -132,7 +135,7 @@ displayGreeting = () => {
         let newCartItems = this.state.cartItems.filter(cartItem => cartItem !== delCartItem)
         this.setState({ cartItems: newCartItems })
 
-        fetch("http://localhost:3000/cart_items" + delCartItem.id, {
+        fetch("http://localhost/cart_items" + delCartItem.id, {
           method: "DELETE"
         })
       }

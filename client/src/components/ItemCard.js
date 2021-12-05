@@ -11,6 +11,7 @@ class ItemCard extends Component {
 
 
     handleAddToCart = () => {
+       
         this.props.loggedIn ?
         this.props.addToCart(this.props.item) 
         :
@@ -20,7 +21,7 @@ class ItemCard extends Component {
     }
 
     handleClick = () => {
-       
+     
         this.props.setCurrentItem(this.props.item)
         this.setState({ navigate: true })
     }
